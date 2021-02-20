@@ -52,10 +52,9 @@ const useLocalStorage = <T>(
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const set: Dispatch<SetStateAction<T | undefined>> = useCallback(
     (valOrFunc) => {
+      const newState = typeof valOrFunc === 'function' ? (valOrFunc as Function)(state) : valOrFunc;
+      if (typeof newState === 'undefined') return;
       try {
-        const newState =
-          typeof valOrFunc === 'function' ? (valOrFunc as Function)(state) : valOrFunc;
-        if (typeof newState === 'undefined') return;
         let value: string;
 
         if (options)
@@ -67,11 +66,11 @@ const useLocalStorage = <T>(
         else value = JSON.stringify(newState);
 
         localStorage.setItem(key, value);
-        setState(deserializer(value));
       } catch {
         // If user is in private mode or has storage restriction
         // localStorage can throw. Also JSON.stringify can throw.
       }
+      setState(newState);
     },
     [key, setState]
   );
